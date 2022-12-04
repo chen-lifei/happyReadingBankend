@@ -51,7 +51,7 @@ router.post('/login', (req, res, next) => {
                 message: '账号或密码输入错误'
             });
         }
-    })
+    });
 });
 
 router.post('/register', (req, res) => {
