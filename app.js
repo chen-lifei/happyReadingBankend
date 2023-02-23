@@ -23,8 +23,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
-app.use('/users', usersRouter);
-app.use('/books', booksRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/books', booksRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -42,4 +42,6 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-server.listen('3000', '127.0.0.1');
+server.listen('3000', () => {
+  console.log("服务器成功启动~");
+});
