@@ -1,6 +1,6 @@
 let express = require('express');
 let router = express.Router();
-let { getBook, getBookCategory, getBookType, getBookList, getAllBookNumber } = require('../models/book');
+let { getBook, getBookCategory, getAllBookType, getBookList, getAllBookNumber, getHotBookList, getEachBookNumber } = require('../models/book');
 
 router.get('/bookInfo/:id', (req, res, next) => {
     let { id } = req.params;
@@ -51,6 +51,60 @@ router.post('/bookList', (req, res, next) => {
     });
 });
 
+/**
+ * data
+ * page, pageSize
+ */
+router.post('/hotBookList', (req, res, next) => {
+    let { page, pageSize } = req.body;
+    page = Number(page);
+    pageSize = Number(pageSize);
+
+    getHotBookList({ page, pageSize }, (err, data) => {
+        if (err) {
+            res.send({
+                status: '0',
+                message: '获取最热书籍列表错误'
+            });
+            return;
+        }
+        if (data) {
+            res.send({
+                status: '1',
+                result: {
+                    page,
+                    list: data,
+                }
+            });
+        }
+    });
+});
+
+router.get('/type', (req, res, next) => {
+    getAllBookType((err, data) => {
+        if (err) {
+            res.send({
+                status: '0',
+                message: '获取类型信息错误'
+            });
+            return;
+        }
+        if (data) {
+            res.send({
+                status: '1',
+                result: data
+            });
+            
+        } else {
+            res.send({
+                status: '1',
+                result: []
+            });
+        }
+    });
+
+});
+
 router.get('/category', (req, res, next) => {
     getBookCategory((err, data) => {
         if (err) {
@@ -60,22 +114,12 @@ router.get('/category', (req, res, next) => {
             });
             return;
         }
-        if (data.length) {
-            data.forEach((item, index) => {
-                getBookType(item.id, (listErr, listData) => {
-                    if (listErr) {
-                        item['list'] = [];
-                    } else {
-                        item['list'] = listData;
-                    }
-                    if (index === data.length - 1) {
-                        res.send({
-                            status: '1',
-                            result: data
-                        });
-                    }
-                });
+        if (data) {
+            res.send({
+                status: '1',
+                result: data
             });
+            
         } else {
             res.send({
                 status: '1',

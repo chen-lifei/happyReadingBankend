@@ -9,10 +9,16 @@ function getBook(id, callback) {
 }
 
 // 获取书籍分类
+function getAllBookType(callback) {
+    const sql = "SELECT res1.category_id, res1.type_id, res1.type, res1.type_name, res2.type_count FROM (SELECT book_category.id as category_id, book_type.id as type_id, book_type.name as type, book_type.cname as type_name FROM book_category INNER JOIN book_type ON book_category.id = book_type.category_id order by book_type.id) AS res1 LEFT JOIN (SELECT book_type.id as type_id, COUNT(*) as type_count FROM book_type JOIN book ON book_type.id = book.type group by book_type.id ORDER BY book_type.id) as res2 on res1.type_id = res2.type_id;";
+    db.sqlConnect(sql, [], (err, data) => {
+        callback(err, data);
+    });
+}
+
 function getBookCategory(callback) {
     const sql = "SELECT * FROM book_category";
     db.sqlConnect(sql, [], (err, data) => {
-        console.log('data', data);
         callback(err, data);
     });
 }
@@ -21,6 +27,23 @@ function getBookCategory(callback) {
 function getBookType(categoryId, callback) {
     const sql = "SELECT * FROM book_type WHERE category_id = ?";
     db.sqlConnect(sql, [categoryId], (err, data) => {
+        callback(err, data);
+    });
+}
+
+// 获取书籍总数
+function getAllBookNumber(callback) {
+    const sql = "SELECT COUNT(*) as count FROM book";
+    db.sqlConnect(sql, [], (err, data) => {
+        callback(err, data[0].count);
+    });
+}
+
+// 获取分类下的书籍数量
+function getEachBookNumber(data, callback) {
+    let { type, category } = data;
+    const sql = "SELECT COUNT(*) as count FROM book where  category = ? AND type = ?";
+    db.sqlConnect(sql, [category, type], (err, data) => {
         callback(err, data);
     });
 }
@@ -43,10 +66,13 @@ function getBookList(data, callback) {
     }
 }
 
-function getAllBookNumber(callback) {
-    const sql = "SELECT COUNT(*) as count FROM book";
-    db.sqlConnect(sql, [], (err, data) => {
-        callback(err, data[0].count);
+// 获取最热书籍列表
+function getHotBookList(data, callback) {
+    let { page, pageSize } = data;
+    let offset = (page - 1) * pageSize;
+    let sql = "SELECT * FROM book ORDER BY read_time DESC limit ?,?";
+    db.sqlConnect(sql, [offset, pageSize], (err, data) => {
+        callback(err, data);
     });
 }
 
@@ -54,6 +80,9 @@ module.exports = {
     getBook,
     getBookCategory,
     getBookType,
-    getBookList,
+    getAllBookType,
     getAllBookNumber,
+    getBookList,
+    getHotBookList,
+    getEachBookNumber,
 };
