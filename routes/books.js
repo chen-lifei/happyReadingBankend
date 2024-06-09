@@ -1,9 +1,9 @@
 let express = require('express');
 let router = express.Router();
-let { getBook, getBookCategory, getAllBookType, getBookList, getAllBookNumber, getHotBookList, getEachBookNumber } = require('../models/book');
+let { getBook, getBookCategory, getAllBookType, getBookList, getAllBookNumber, getHotBookList, getBookChapter } = require('../models/book');
 
-router.get('/bookInfo/:id', (req, res, next) => {
-    let { id } = req.params;
+router.post('/bookInfo', (req, res, next) => {
+    let { id } = req.body;
     getBook(id, (err, data) => {
         if (err) {
             res.send({
@@ -124,6 +124,25 @@ router.get('/category', (req, res, next) => {
             res.send({
                 status: '1',
                 result: []
+            });
+        }
+    });
+});
+
+router.post("/chapter", (req, res, next) => {
+    let { id } = req.body;
+    getBookChapter(id, (err, data) => {
+        if (err) {
+            res.send({
+                status: "0",
+                message: "获取书籍章节错误"
+            });
+            return;
+        }
+        if (data) {
+            res.send({
+                status: "1",
+                result: data
             });
         }
     });
