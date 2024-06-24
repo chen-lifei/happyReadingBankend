@@ -43,8 +43,8 @@ function getAllBookNumber(callback) {
 function getEachBookNumber(data, callback) {
     let { type, category } = data;
     const sql = "SELECT COUNT(*) as count FROM happyreading.book where  category = ? AND type = ?";
-    db.sqlConnect(sql, [category, type], (err, data) => {
-        callback(err, data);
+    db.sqlConnect(sql, [category, type], (err, result) => {
+        callback(err, result);
     });
 }
 
@@ -55,13 +55,13 @@ function getBookList(data, callback) {
     let sql;
     if (!category || !type) {
         sql = "SELECT * FROM happyreading.book limit ?,?";
-        db.sqlConnect(sql, [offset, pageSize], (err, data) => {
-            callback(err, data);
+        db.sqlConnect(sql, [offset, pageSize], (err, result) => {
+            callback(err, result);
         });
     } else {
         sql = "SELECT * FROM happyreading.book WHERE category = ? AND type = ? limit ?,?";
-        db.sqlConnect(sql, [category, type, offset, pageSize], (err, data) => {
-            callback(err, data);
+        db.sqlConnect(sql, [category, type, offset, pageSize], (err, result) => {
+            callback(err, result);
         });
     }
 }
@@ -71,16 +71,33 @@ function getHotBookList(data, callback) {
     let { page, pageSize } = data;
     let offset = (page - 1) * pageSize;
     let sql = "SELECT * FROM happyreading.book ORDER BY read_time DESC limit ?,?";
-    db.sqlConnect(sql, [offset, pageSize], (err, data) => {
-        callback(err, data);
+    db.sqlConnect(sql, [offset, pageSize], (err, result) => {
+        callback(err, result);
     });
 }
 
 // 获取书籍章节
 function getBookChapter(id, callback) {
     let sql = "SELECT * FROM happyreading.chapter WHERE id = ?";
-    db.sqlConnect(sql, [id], (err, data) => {
-        callback(err, data);
+    db.sqlConnect(sql, [id], (err, result) => {
+        callback(err, result);
+    });
+}
+
+// 获取书籍评论
+function getBookComment(id, callback) {
+    let sql = "SELECT book_comment.id, book_comment.content, book_comment.to_comment_id, book_comment.comment_date, book_comment.from_region, user.name, user.avatar FROM happyreading.book_comment INNER JOIN happyreading.user ON book_comment.from_uid = user.id WHERE comment_book_id = ?";
+    db.sqlConnect(sql, [id], (err, result) => {
+        callback(err, result);
+    });
+}
+
+// 评论书籍
+function addComment(data, callback) {
+    let { bookId, content, uId, toCommentId, date, region } = data;
+    let sql = "INSERT INTO happyreading.book_comment(comment_book_id, content, from_uid, to_comment_id, comment_date, from_region) values (?,?,?,?,?,?);";
+    db.sqlConnect(sql, [bookId, content, uId, toCommentId, date, region], (err, result) => {
+        callback(err, result);
     });
 }
 
@@ -94,4 +111,6 @@ module.exports = {
     getHotBookList,
     getEachBookNumber,
     getBookChapter,
+    getBookComment,
+    addComment,
 };

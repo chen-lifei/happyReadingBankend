@@ -1,6 +1,6 @@
 let express = require('express');
 let router = express.Router();
-let { getBook, getBookCategory, getAllBookType, getBookList, getAllBookNumber, getHotBookList, getBookChapter } = require('../models/book');
+let { getBook, getBookCategory, getAllBookType, getBookList, getAllBookNumber, getHotBookList, getBookChapter, getBookComment, addComment} = require('../models/book');
 
 router.post('/bookInfo', (req, res, next) => {
     let { id } = req.body;
@@ -143,6 +143,57 @@ router.post("/chapter", (req, res, next) => {
             res.send({
                 status: "1",
                 result: data
+            });
+        }
+    });
+});
+
+router.post("/comment", (req, res, next) => {
+    let { id } = req.body;
+    getBookComment(id, (err, data) => {
+        if (err) {
+            res.send({
+                status: "0",
+                message: "获取书籍评论错误"
+            });
+            return;
+        }
+        if (data) {
+            let list = [];
+            if (data.length) {
+                data.forEach(item => {
+                    if (item.to_comment_id) {
+                        let parentIndex = data.findIndex(pItem => pItem.id == item.to_comment_id);
+                        let childComment = list[parentIndex]["childComment"];
+                        childComment.push(item);
+                    } else {
+                        item.childComment = [];
+                        list.push(item);
+                    }
+                });
+            }
+            res.send({
+                status: "1",
+                result: list
+            });
+        }
+    });
+});
+
+router.post("/addComment", (req, res, next) => {
+    let { bookId, content, uId, toCommentId, region, date } = req.body;
+    addComment({bookId: Number(bookId), content, uId, toCommentId, region, date}, (err, data) => {
+        if (err) {
+            res.send({
+                status: "0",
+                message: "增加书籍评论错误"
+            });
+            return;
+        }
+        if (data) {
+            res.send({
+                status: "1",
+                result: data.insertId
             });
         }
     });
